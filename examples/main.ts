@@ -1,7 +1,5 @@
 import { runner } from '../src';
-// import './scenarios/sample';
-import './scenarios/composer-story-flow';
-import './scenarios/composer-image-flow';
-import { getEnv } from '../src/loadflux/util';
+import './scenarios/spade-load-test';
+import './scenarios/spade-load-test-api-content';
 
-runner.sustain(getEnv('COMPOSER_USERS', 10));
+runner.sustain(20);
