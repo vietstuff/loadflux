@@ -1,22 +1,174 @@
+import 'core-js/features/array/flat';
+import 'core-js/features/array/flat-map';
 import { get, log, think, scenario, before, Context } from '../../src';
 
-scenario(
-  {
-    name: 'Spade SSR flow',
-    weight: 1,
-  },
-  before(async (context: Context) => {
-    context.cookie(
-      '_oauth2_proxy',
-      '',
-    );
-  }),
-  get({
-    url: 'https://experience.expdevint.shift21.ffx.nz',
-    expect: async (expect, response) => {
-      expect(response.body).toContain('Stuff');
-    }
-  }),
-  log('Logged in the landing page'),
-  think(2000),
+const cartesian = (...a: string[][]): string[][] =>
+  // @ts-ignore
+  a.reduce((acc, curr) => acc.flatMap((x) => curr.map((y) => [x, y].flat())));
+
+[
+  ['Homepage', 'https://experience.expdevint.shift21.ffx.nz', 10],
+  [
+    'Homepage API',
+    'https://experience.expdevint.shift21.ffx.nz/spade/api/1.1176/content',
+    50,
+  ],
+  ...[
+    'travel',
+    'travel/destinations',
+    'travel/destinations/nz',
+    'travel/destinations/nz/auckland',
+    'travel/destinations/nz/bay-of-plenty',
+    'travel/destinations/nz/canterbury',
+    'travel/destinations/nz/central-otago-lakes',
+    'travel/destinations/nz/dunedin',
+    'travel/destinations/nz/gisborne',
+    'travel/destinations/nz/hawkes-bay',
+    'travel/destinations/nz/marlborough',
+    'travel/destinations/nz/nelson-tasman',
+    'travel/destinations/nz/northland',
+    'travel/destinations/nz/rotorua',
+    'travel/destinations/nz/southland',
+    'travel/destinations/nz/taranaki',
+    'travel/destinations/nz/taupo',
+    'travel/destinations/nz/the-coromandel',
+    'travel/destinations/nz/waikato',
+    'travel/destinations/nz/wellington',
+    'travel/destinations/nz/west-coast',
+    'travel/destinations/nz/whanganui-manawatu',
+    'travel/destinations/africa',
+    'travel/destinations/asia',
+    'travel/destinations/australia',
+    'travel/destinations/canada-alaska',
+    'travel/destinations/europe',
+    'travel/destinations/hawaii',
+    'travel/destinations/middle-east',
+    'travel/destinations/pacific-islands',
+    'travel/destinations/south-and-central-america',
+    'travel/destinations/uk-and-ireland',
+    'travel/destinations/usa',
+    'travel/experiences',
+    'travel/experiences/accommodation',
+    'travel/experiences/adventure-holidays',
+    'travel/experiences/budget-holidays',
+    'travel/experiences/camping-holidays',
+    'travel/experiences/cruises',
+    'travel/experiences/cycling-holidays',
+    'travel/experiences/family-holidays',
+    'travel/experiences/food-and-wine-holidays',
+    'travel/experiences/hiking-holidays',
+    'travel/experiences/luxury-holidays',
+    'travel/experiences/maori-culture',
+    'travel/experiences/national-parks',
+    'travel/experiences/road-trips',
+    'travel/experiences/romantic-holidays',
+    'travel/experiences/short-breaks',
+    'travel/experiences/ski-snow-holidays',
+    'travel/experiences/train-journeys',
+    'travel/experiences/water-sports',
+    'travel/experiences/wellness-holidays',
+    'travel/experiences/beaches',
+    'travel/news',
+    'travel/travel-troubles',
+    'travel/green-travel',
+    'travel/back-your-backyard',
+    'travel/kiwi-traveller',
+    'travel/kiwi-traveller/ask-an-expert',
+  ].flatMap((path) => [
+    [path, `https://experience.expdevint.shift21.ffx.nz/${path}`, 1],
+    [
+      `API ${path}`,
+      `https://experience.expdevint.shift21.ffx.nz/spade/api/1.1176/content/${path}`,
+      5,
+    ],
+  ]),
+  ...cartesian(
+    [
+      'northland',
+      'auckland',
+      'the-coromandel',
+      'waikato',
+      'bay-of-plenty',
+      'rotorua',
+      'taranaki',
+      'gisborne',
+      'taupo',
+      'hawkes-bay',
+      'whanganui-manawatu',
+      'wellington',
+      'nelson-tasman',
+      'west-coast',
+      'marlborough',
+      'canterbury',
+      'central-otago-lakes',
+      'dunedin',
+      'southland',
+      'australia',
+      'pacific-islands',
+      'uk-and-ireland',
+      'europe',
+      'hawaii',
+      'usa',
+      'south-america',
+      'asia',
+      'africa',
+      'middle-east',
+      'canada-alaska',
+      'south-and-central-america',
+    ],
+    [
+      'romantic-holidays',
+      'family-holidays',
+      'adventure-holidays',
+      'food-and-wine-holidays',
+      'budget-holidays',
+      'luxury-holidays',
+      'short-breaks',
+      'ski-snow-holidays',
+      'cruises',
+      'cycling-holidays',
+      'water-sports',
+      'hiking-holidays',
+      'camping-holidays',
+      'train-journeys',
+      'national-parks',
+      'road-trips',
+      'maori-culture',
+      'wellness-holidays',
+      'accommodation',
+      'beaches',
+    ],
+  ).flatMap(([destination, experience]) => [
+    [
+      `/travel/search/${destination}/${experience}`,
+      `https://experience.expdevint.shift21.ffx.nz/travel/search/${destination}/${experience}`,
+      1,
+    ],
+    [
+      `API /travel/search/${destination}/${experience}`,
+      `https://experience.expdevint.shift21.ffx.nz/spade/api/1.1176/content/travel/search/${destination}/${experience}`,
+      5,
+    ],
+  ]),
+].forEach(([name, url, weight]) =>
+  scenario(
+    {
+      name: `${name}`,
+      weight: ~~weight,
+    },
+    before(async (context: Context) => {
+      context.cookie(
+        '_oauth2_proxy',
+        'eyJBY2Nlc3NUb2tlbiI6ImEvOHI5a2ZBNnBHYmk2eEkvLzdxWnIyRE1oNzlxS0N2bTUyeVFyeHJMSDlsdkQxcDYwTWdFTFJocHBjYWJwdjNYMUczZEU0NE9maFhlZjVDUW4yRUdBQVRvSXdZRFB6TDE4RGRkSnJmK3V3MEZJTitEOEowak9jaWJsNEIrVmIvb2JnZWI0Y0VHQ2o4VTRuNC9kZm94ejhOWjBKKzBQY0lXMC9qbGc5aWIvVnZ4aHlHaHBlSkM4aE52OVZ3NjJnbytHZC92cnV5Tk5WMnVNVDBMTExreldTOWZPQ3lxK3UwMkVMMjlRUzJLZm5YV0o1ZTArdDkyR3p3IiwiSURUb2tlbiI6IjIwbjgwZmtndkZLRTdHS1ptc3Uzek1MOGhoaDM1cjZrSEhwRXNaNllmLzBKUzR5UE94aDgrYmJsdDJ3WmFvR2pNbVNJUXBaZ2pvdTBYMldtNWJJcDNZVnJZUnlTREFSTUIyQWNpUG1wcCtvQUNrRmp0cGJqeER5V1FURWk1dXpyYk82ZC9UTzMrUllJeWdTRWdMZ0NGM3lLQi9CSngwRGFkbHNtY0JRUFhwRHBURGx3ZzNiMmJjUHhiSzd2RUFFdnFUV21obHl3RzBMdEwrV3ZGQTFZeWNsbGl2WEwwb21WR3lUNFBCVlBqUmhJSkFkTzVTRFRnM2VLSHJMRUh6aytPNS84S2R0cEJlOHFuOVcvd3VlNE1ocHF3WWplZE1nc2RYVjRmY3NnMU9CL2puN0VWcmFmZENWNnR1YnFlVnB3bGNBcFpHc25KaGxINEhCczhoeU1YRFFoakRsYXNCSEpEeU4vb201Tnl3MlRGRUhFZzBUM3p1eVFObTlLaUZOZ1NIbDlSOWp4amJ4RzVOVks4QlhiVlFBNzJBUjRkS1Z5ZGJ1K0lCTnpWR3Q1U3c2bEtPeTZZbFhxbFJXK1M2OFNBa2UyS2dpK3E1b2F3QVI2MDZITzR0eUZiYVNWNXhMeExFZ1c2ckNIUW56VGJUUWM5bGxzVTJlQ243WXVweFRWRTNLOHJvMDhGRlJ1VUt1SC96RUk1cmtLZTd0YnFadDF5bkpQQnJDNU9SQkg3cVdGSkF6MGIrb3JpdFJSbm45M1c0d1V2NGpUa3p6eWc2U3N1RkRzUU5NQ0lQOXNaQ29VVjhqdDZvc3RsWkxaN0RLeHo2cWYrOE02cnBFWFQ1M1psNHJlS3Zra3UxdGkwSmxzZy9MMkFUdDhFUHJ2TXpOMCtqa3V2TmNUTVZ6UHZINDdJUjdENUFrRXppQTNCM29KcENnRjJNZHFmMGVZQndQUld4bjlLUHBKcms4TVk3eGFldTZvREdpMmluZk13RUI2M05qR0tsRG5YQmRiRmFVeTRvQm1KRXhaQlA5TnRqdTFMV0lxWURUN0RMYVIxdmQ2MFgvcWVQbTlMKzRZT1NoY1kzVDliMWJ0SHNWNS9mQjRBUDBKendzNDhlUWJPVkNjWWpPbi9HbG9qdXpBSDRoV25waSs4TEpXSnRrNTdML3VLS3FwSUpWYTl1VjduK1NZQk9iQ0FxOTVxTExITEREU3VMWmtzc2VFT2JMeTZZOTEwMjNpWGI5RlFGcko5dVYyUjZTd0RNOTZnZytMYmwzNVpQOWpJd2Q0UDFROWpidGhEenc0RVczTk9YVkFRc0ljV1RXdGZxZm1KTHZnM0l2MjFlZ2w3OC92UGVmQllxOTV5R0IvRGpVTmVka1l1VllTQU5VZXF0ODRBZ2JxejlINjRvV0RTSGc4T2pweGt2eUYyL2cvUlFmUThVeFkzZXlCMnZOaTcwS09Da3RxL2xTU01OUFhyZlF4TGRyZ01EdnE1TzN2ZGh3SjVyUG1OUXpOaHZjNzdYUnNGZVBpZ2sxVXhYS0xuZlRUTWc5Z3FIbmkrdlR1OXNGSTQvMDAwNk9HWlBDa0lHYmRybGppcEhWV2NSWUxzNUNEeXJ2WHVUcVFyUUFjUmhtNnlqY29KODJpc1RzQm9SMi82SGUrUW45cjZ6V3ZGK3JQekw0ZW5IZGZxRXJmd0xOY2FhU3Y5a0VHdjJHK2d3b2oiLCJSZWZyZXNoVG9rZW4iOiI4SVhIYnNEOHhOVGRlRzFuOHhNejVSQmV2NnAvcUE3aVRCQUVwV0RidzZLSmx1eWR6aFArNjhJV3dPRzY5b0I0NDRGL2llVHRlWW5sa1d5NFNzbG42MWxQd2RsT0R1ZDQxV2ZUKzMrY1RSM0tFczVuWTdaajZ4ZlNpZTJuVmptNW9iR1lxVk9sYUZrQ29WdTd4bWVKNEFwN21SOXRkekk9IiwiRW1haWwiOiJMMHhlQU02UGFvWFVFVVZ2am1LakM0SmxaTGNQUkxqaFRFZE1FZzBmSlVWQjl2c2pIdElPckR0MFpLREIiLCJVc2VyIjoiS3c4QitzRzRKbWkyZ0ZUalp1Vm1OWStoLzVvOERTL2RRQ2t5RjJEWkQyeDBpVWQrY1E9PSIsIkNyZWF0ZWRBdCI6IjIwMjAtMTAtMjNUMDA6NDA6MTAuMzcxMzkwNjMzWiIsIkV4cGlyZXNPbiI6IjIwMjAtMTAtMjNUMDE6NDA6MDlaIn0=|1603413610|91BP3ka9khkgJc3mfyW5AzpSPfc=',
+      );
+    }),
+    get({
+      url: `${url}`,
+      expect: async (expect, response) => {
+        expect(response.body).toBeTruthy();
+      },
+    }),
+    log('Logged in the landing page'),
+    think(2000),
+  ),
 );
